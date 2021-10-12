@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from bifair_utils import *
 from utils.fairness_functions import *
 from models import SimpleNonLinear, SimpleLinear
-from create_data import SimpleAdvDatasetReader
+from create_data import SimpleAdvDatasetReader, EncodedEmoji
 
 
 
@@ -34,6 +34,9 @@ def run(inner_wd, outer_wd, es_tol, weight_len, fair_lambda, f_name, dataset_nam
 
     if dataset_name == 'adult':
         dataset_object = SimpleAdvDatasetReader(dataset_name, **params)
+        vocab, number_of_labels, number_of_aux_labels, iterators, other_data_metadata = dataset_object.run()
+    elif dataset_name == 'encoded_emoji':
+        dataset_object = EncodedEmoji(dataset_name, **params)
         vocab, number_of_labels, number_of_aux_labels, iterators, other_data_metadata = dataset_object.run()
     else:
         raise NotImplementedError
