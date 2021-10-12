@@ -36,8 +36,10 @@ def run(inner_wd, outer_wd, es_tol, weight_len, fair_lambda, f_name, dataset_nam
         dataset_object = SimpleAdvDatasetReader(dataset_name, **params)
         vocab, number_of_labels, number_of_aux_labels, iterators, other_data_metadata = dataset_object.run()
     elif dataset_name == 'encoded_emoji':
+        print(dataset_name)
         dataset_object = EncodedEmoji(dataset_name, **params)
         vocab, number_of_labels, number_of_aux_labels, iterators, other_data_metadata = dataset_object.run()
+        print("here")
     else:
         raise NotImplementedError
 

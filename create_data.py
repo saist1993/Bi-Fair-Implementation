@@ -306,10 +306,10 @@ class EncodedEmoji:
         dev_data = self.process_data(X_dev,y_dev,s_dev, vocab=vocab)
         test_data = self.process_data(X_test,y_test,s_test, vocab=vocab)
 
-        fairness_data = \
-            create_fairness_data(
-                X_train, y_train, s_train, X_dev, y_dev,
-                s_dev, self.process_data, vocab, self.fairness_iterator)
+        # fairness_data = \
+        #     create_fairness_data(
+        #         X_train, y_train, s_train, X_dev, y_dev,
+        #         s_dev, self.process_data, vocab, self.fairness_iterator)
 
 
         train_iterator = torch.utils.data.DataLoader(train_data,
@@ -330,18 +330,18 @@ class EncodedEmoji:
                                                     collate_fn=self.collate
                                                     )
 
-        fairness_iterator = torch.utils.data.DataLoader(fairness_data,
-                                                        512,
-                                                        shuffle=False,
-                                                        collate_fn=self.collate
-                                                        )
+        # fairness_iterator = torch.utils.data.DataLoader(fairness_data,
+        #                                                 512,
+        #                                                 shuffle=False,
+        #                                                 collate_fn=self.collate
+        #                                                 )
 
         iterators = []  # If it was k-fold. One could append k iterators here.
         iterator_set = {
             'train_iterator': train_iterator,
             'valid_iterator': dev_iterator,
-            'test_iterator': test_iterator,
-            'fairness_iterator': fairness_iterator  # now this can be independent of the dev iterator.
+            'test_iterator': test_iterator
+            # 'fairness_iterator': fairness_iterator  # now this can be independent of the dev iterator.
         }
         iterators.append(iterator_set)
 
