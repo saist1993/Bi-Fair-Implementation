@@ -14,7 +14,7 @@ from create_data import SimpleAdvDatasetReader, EncodedEmoji
 
 
 
-def run(inner_wd, outer_wd, es_tol, weight_len, fair_lambda, f_name, dataset_name, batch_size, model_type, device, T_outloop, T_in, chkpt, fairness_function, seed):
+def run(inner_wd, outer_wd, es_tol, weight_len, fair_lambda, f_name, dataset_name, batch_size, model_type, device, T_outloop, T_in, chkpt, fairness_function, fariness_function_string, seed):
     print(f"seed is {seed}")
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
@@ -124,7 +124,7 @@ def run(inner_wd, outer_wd, es_tol, weight_len, fair_lambda, f_name, dataset_nam
             idx, v_items = next(v_generator)
             v_output = fmodel(v_items)
             v_util_loss = F.binary_cross_entropy_with_logits(v_output['prediction'].squeeze(), v_items['labels'].squeeze().float(), reduction='none')
-            v_fair_loss = get_fairness_loss(logits=v_output['prediction'].squeeze(), items=v_items, loss=v_util_loss)
+            v_fair_loss = get_fairness_loss(logits=v_output['prediction'].squeeze(), items=v_items, fairness_function_string=fariness_function_string, loss=v_util_loss)
             v_total_loss = v_util_loss.mean() + fair_lambda * v_fair_loss
             opt_weights.zero_grad()
             w.grad = torch.autograd.grad(v_total_loss, w)[0] # looks like we are diff wrt model params before the trian epochs
@@ -139,7 +139,7 @@ def run(inner_wd, outer_wd, es_tol, weight_len, fair_lambda, f_name, dataset_nam
                 ep = t_out // len(iterators[0]['train_iterator'])
                 tr_loss_sum /= (len(iterators[0]['train_iterator']) * chkpt * T_in)
                 print(f'Loss/Train/Loss',  tr_loss_sum, ep)
-                t, v_metrics = infer(model, iterators[0]['valid_iterator'], device, fairness_function, threshold=None)
+                t, v_metrics = infer(model, iterators[0]['valid_iterator'], device, fairness_function,fariness_function_string, threshold=None)
                 print(calculate_final_fairness(v_metrics['interm_group_fairness']))
                 print(v_metrics)
                 stop_loss = v_metrics['loss'] + fair_lambda * v_metrics['fairness_loss']
@@ -154,8 +154,8 @@ def run(inner_wd, outer_wd, es_tol, weight_len, fair_lambda, f_name, dataset_nam
 
     with torch.no_grad():
         model.eval()
-        v_threshold, v_metrics = infer(model, iterators[0]['valid_iterator'], device, fairness_function, threshold=None)
-        _, t_metrics = infer(model, iterators[0]['test_iterator'], device, fairness_function, threshold=v_threshold)
+        v_threshold, v_metrics = infer(model, iterators[0]['valid_iterator'], device, fairness_function, fariness_function_string, threshold=None)
+        _, t_metrics = infer(model, iterators[0]['test_iterator'], device, fairness_function, fariness_function_string, threshold=v_threshold)
         print(f"validation threshold:{v_threshold}")
         print(f"validation metrics")
         print(v_metrics)

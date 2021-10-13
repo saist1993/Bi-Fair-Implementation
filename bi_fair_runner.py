@@ -25,6 +25,12 @@ if __name__ == '__main__':
     seeds = args.seed
     if args.fairness_function == 'accuracy_parity':
         fairness_function = accuracy_parity
+    elif args.fairness_function == 'equal_opportunity':
+        fairness_function = equal_opportunity
+    elif args.fairness_function == 'equal_odds':
+        fairness_function = equal_odds
+    else:
+        raise NotImplementedError
 
     chkpt = 10
     device = 'cpu'
@@ -88,7 +94,7 @@ if __name__ == '__main__':
                             f_name = 'bifair'
                             final_eval = main.run(inner_wd, outer_wd, es_tol, weight_len, fair_lambda, f_name, dataset_name, batch_size, model_type,
                                              device,
-                                             T_outloop, T_in, chkpt, fairness_function, seed)
+                                             T_outloop, T_in, chkpt, fairness_function,args.fairness_function, seed)
                             aux_data = {
                                 'bs':bs,
                                 'inner_wd': inner_wd,

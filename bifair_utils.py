@@ -84,15 +84,24 @@ def get_weighted_loss(logits, weights, items, loss):
     return loss
 
 
-def get_fairness_loss(logits, items, loss=None):
+def get_fairness_loss(logits, items, fairness_function_string, loss=None):
     p_fav_idx = torch.logical_and(items['labels'] == 1, items['aux'] == 1)
     p_unfav_idx = torch.logical_and(items['labels'] == 1, items['aux'] == 0)
     up_fav_idx = torch.logical_and(items['labels'] == 0, items['aux'] == 1)
     up_unfav_idx = torch.logical_and(items['labels'] == 0, items['aux'] == 0)
 
-    # probs = logits.sigmoid()
+    probs = logits.sigmoid() # probablity of model prediction
 
-    fav_diff = torch.abs(loss[up_fav_idx].mean() - loss[p_fav_idx].mean())
+    if fairness_function_string == 'equal_opportunity':
+        fav_diff = torch.abs(loss[up_fav_idx].mean() - loss[p_fav_idx].mean())  # accuracy parity
+    elif fairness_function_string == 'equal_odds':
+        fav_diff = torch.abs(loss[p_unfav_idx].mean() - loss[up_unfav_idx].mean())  +  torch.abs(loss[p_fav_idx].mean() - loss[up_unfav_idx].mean())# averaged odds difference
+    elif fairness_function_string == 'accuracy_parity':
+        print("still a TODO")
+        raise NotImplementedError
+    else:
+        raise NotImplementedError
+
     return fav_diff
 
 
@@ -140,7 +149,7 @@ def find_opt_threshold(logits, lbls):
     return thresholds[best_ind]
 
 
-def get_metrics(logits, lbls, items, fairness_function, device, threshold=0.5, preds=None):
+def get_metrics(logits, lbls, items, fairness_function, fariness_function_string, device, threshold=0.5, preds=None):
     loss = F.binary_cross_entropy_with_logits(logits, lbls, reduction='none')
     probs = logits.sigmoid()
     if preds is None:
@@ -157,7 +166,7 @@ def get_metrics(logits, lbls, items, fairness_function, device, threshold=0.5, p
     # fairness_loss = get_fairness_loss(probs, lbls, metas, loss=loss)
 
 
-    fairness_loss = get_fairness_loss(logits, items, loss=loss) # needs to be generalized
+    fairness_loss = get_fairness_loss(logits, items, fariness_function_string, loss=loss) # needs to be generalized
     fairness_metrics = {}
     # fairness_metrics = get_fairness_metrics(preds, lbls, metas, loss)
     fairness_metrics['fairness_loss'] = fairness_loss.item()
@@ -173,7 +182,7 @@ def get_metrics(logits, lbls, items, fairness_function, device, threshold=0.5, p
     return {**utility_metrics, **fairness_metrics}
 
 
-def infer(model, iterator, device, fairness_function, threshold=0.5):
+def infer(model, iterator, device, fairness_function,fariness_function_string, threshold=0.5):
     logits, aux, lbls, total_no_aux_classes, total_no_main_classes = generate_predictions(model, iterator, device)
     if threshold is None:
         threshold = find_opt_threshold(logits, lbls)
@@ -183,7 +192,7 @@ def infer(model, iterator, device, fairness_function, threshold=0.5):
         'total_no_main_classes': total_no_main_classes,
         'total_no_aux_classes': total_no_aux_classes
     }
-    return threshold, get_metrics(logits, lbls, items, fairness_function, device, threshold, None)
+    return threshold, get_metrics(logits, lbls, items, fairness_function, fariness_function_string, device, threshold, None)
 
 
 
