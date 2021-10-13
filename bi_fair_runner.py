@@ -44,7 +44,7 @@ if __name__ == '__main__':
     # create dataset dir in logs_dir
     dataset_dir = logs_dir / Path(dataset_name)
     create_dir(dataset_dir)
-    log_file_name = str(dataset_dir / Path(args.log_name)) + '.log'
+    log_file_name = str(dataset_dir / Path(args.log_name + "_" + str(args.seed[0]) + "_" + args.fairness_function + "_" + str(args.model))) + '.log'
 
     # logger init
     logging.basicConfig(filename=log_file_name,

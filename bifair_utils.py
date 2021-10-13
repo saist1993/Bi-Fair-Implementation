@@ -95,7 +95,10 @@ def get_fairness_loss(logits, items, fairness_function_string, loss=None):
     if fairness_function_string == 'equal_opportunity':
         fav_diff = torch.abs(loss[up_fav_idx].mean() - loss[p_fav_idx].mean())  # accuracy parity
     elif fairness_function_string == 'equal_odds':
-        fav_diff = torch.abs(loss[p_unfav_idx].mean() - loss[up_unfav_idx].mean())  +  torch.abs(loss[p_fav_idx].mean() - loss[up_unfav_idx].mean())# averaged odds difference
+        # fav_diff = torch.abs(loss[p_unfav_idx].mean() - loss[up_unfav_idx].mean())  +  torch.abs(loss[p_fav_idx].mean() - loss[up_unfav_idx].mean())# averaged odds difference
+        unfav_diff = torch.abs(loss[up_unfav_idx].mean() - loss[p_unfav_idx].mean())
+        fav_diff = torch.abs(loss[up_fav_idx].mean() - loss[p_fav_idx].mean())  # accuracy parity
+        fav_diff = (unfav_diff + fav_diff)/2.0
     elif fairness_function_string == 'accuracy_parity':
         print("still a TODO")
         raise NotImplementedError
