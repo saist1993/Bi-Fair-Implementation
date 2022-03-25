@@ -7,7 +7,7 @@ import numpy as np
 from pathlib import Path
 
 
-folder_location = '../DPNLP/datasets'
+folder_location = '../FairGrad/datasets'
 
 
 
