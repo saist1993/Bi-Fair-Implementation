@@ -32,7 +32,8 @@ def run(inner_wd, outer_wd, es_tol, weight_len, fair_lambda, f_name, dataset_nam
         'fairness_iterator': 'some dummy sruff'
     }
 
-    if dataset_name == 'adult':
+    if dataset_name.lower() in "_".join(['celeb', 'crime', 'dutch', 'compas', 'german', 'adult',
+                                         'gaussian', 'adult', 'multigroups']):
         dataset_object = SimpleAdvDatasetReader(dataset_name, **params)
         vocab, number_of_labels, number_of_aux_labels, iterators, other_data_metadata = dataset_object.run()
     elif dataset_name == 'encoded_emoji':
@@ -115,11 +116,13 @@ def run(inner_wd, outer_wd, es_tol, weight_len, fair_lambda, f_name, dataset_nam
             for _ in range(T_in):
                 idx, items = next(tr_generator) # to check what items contain -> see create data SimpleAdvDatasetReader. collate function.
                 # diffopt.zero_grad() # this is not in the original codebase. According to documentation this is not needed.
+                # This is not needed because we are now doing stateful. Essentailly this is taken care off! We are not doing inplace any more
                 t_output = fmodel(items) # forward pass from the model
                 tr_loss = F.binary_cross_entropy_with_logits(t_output['prediction'].squeeze(), items['labels'].squeeze().float(), reduction='none')
                 tr_loss_sum += tr_loss.mean().item()
                 tr_loss = get_weighted_loss(logits=t_output['prediction'].squeeze(), weights=w, items=items, loss=tr_loss)
                 diffopt.step(tr_loss.mean())
+                # We also don't do diffopt.backward as it is taken care internally by the higher library i.e. diffopt takes care of it.
 
             idx, v_items = next(v_generator)
             v_output = fmodel(v_items)
