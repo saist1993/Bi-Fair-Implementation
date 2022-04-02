@@ -893,6 +893,69 @@ def get_dutch_data(load_data_size=None):
     return X, y, s
 
 
+def get_gaussian_data(n_samples=None, plot_data=False):
+    """
+        Code for generating the synthetic data.
+        We will have two non-sensitive features and one sensitive feature.
+        A sensitive feature value of -1 means the example is considered to be in protected group (e.g., female) and 1.0 means it's in non-protected group (e.g., male).
+    """
+    if n_samples is None:
+        n_samples = 50000  # generate these many data points per class
+
+    def gen_gaussian(mean_in, cov_in, class_label, sens_label, samples):
+        nv = multivariate_normal(mean=mean_in, cov=cov_in)
+        X = nv.rvs(samples)
+        y = np.ones(samples, dtype=float) * class_label
+        s = np.ones(samples, dtype=float) * sens_label
+        return nv, X, y, s
+
+    def gen_uni_gaussian(mean, std):
+        nv = univariate_normal(loc=mean, scale=std)
+        return nv
+
+    """ Generate the non-sensitive features randomly """
+    # We will generate one gaussian cluster for each class
+    mu1, sigma1 = [2, -2], [[1, 0], [0, 1]]  # negative class, negative sens attr (protected)
+    mu2, sigma2 = [4.5, -1.5], [[1, 0], [0, 1]]  # negative class, positive sens attr (unprotected)
+
+    mu3, sigma3 = [3, -1], [[1, 0], [0, 1]]  # positive class, positive sens attr
+    mu32, sigma32 = [1, 4], [[0.5, 0], [0, 0.5]]  # positive class, positive sens attr
+    mu4, sigma4 = [2.5, 2.5], [[1, 0], [0, 1]] # positive class, negative sens attr
+
+    nmb_1, nmb_2 = int(np.floor(n_samples/ 4)), int(np.floor(n_samples/ 8))
+
+    gap = n_samples - 3 * nmb_1 - 2 * nmb_2
+
+    nv1, X1, y1, s1 = gen_gaussian(mu1, sigma1, -1, -1,  nmb_1)  # negative class, negative sens attr
+    nv2, X2, y2, s2 = gen_gaussian(mu2, sigma2, -1, 1, nmb_1)  # negative class, positive sens attr
+
+    nv3, X3, y3, s3 = gen_gaussian(mu3, sigma3, 1, -1, nmb_2)  # positive class, negative sens attr
+    nv32, X32, y32, s32 = gen_gaussian(mu32, sigma32, 1, -1, nmb_2)  # positive class, negative sens attr
+    X3 = np.vstack((X3, X32))
+    y3 = np.hstack((y3, y32))
+    s3 = np.hstack((s3, s32))
+
+    nv4, X4, y4, s4 = gen_gaussian(mu4, sigma4, 1, 1, nmb_1+gap)  # positive class, positive sens attr
+
+
+    # join the posisitve and negative class clusters
+    x_data = np.vstack((X1, X2, X3, X4))
+    y_data = np.hstack((y1, y2, y3, y4))
+    s_data = np.hstack((s1, s2, s3, s4))
+
+    # shuffle the data
+    perm = range(0, n_samples)
+    perm = sample(perm, n_samples)
+    x_data = x_data[perm]
+    y_data = y_data[perm]
+    s_data = s_data[perm]
+    #
+    # if plot_data:
+    #     plot_data_(x_data, y_data, s_data, num_to_draw=1000)
+
+    return x_data, y_data, s_data
+
+
 def normalize(x):
     # scale to [-1, 1]
     x_ = (x - x.min()) / (x.max() - x.min()) * 2 - 1

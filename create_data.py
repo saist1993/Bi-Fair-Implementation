@@ -35,8 +35,7 @@ class SimpleAdvDatasetReader():
         elif 'adult' in self.dataset_name and 'multigroup' in self.dataset_name:
             self.X, self.y, self.s = get_celeb_multigroups_data()
         elif 'gaussian' in self.dataset_name:
-            raise NotImplementedError
-            # self.X, self.y, self.s = drh.get_gaussian_data(50000)
+            self.X, self.y, self.s = get_gaussian_data(50000)
         else:
             raise NotImplementedError
 
