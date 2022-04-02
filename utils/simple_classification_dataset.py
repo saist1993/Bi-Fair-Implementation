@@ -892,6 +892,32 @@ def get_dutch_data(load_data_size=None):
     # return X[unique_indices,:], y[unique_indices], s[unique_indices]
     return X, y, s
 
+import math
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+from random import seed, shuffle, sample
+from scipy.stats import multivariate_normal
+from scipy.stats import norm as univariate_normal
+
+plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+## for Palatino and other serif fonts use:
+plt.rc('font',**{'family':'serif','serif':['Palatino']})
+plt.rcParams['text.usetex'] = True
+
+SMALL_SIZE = 37
+MEDIUM_SIZE = 40
+BIGGER_SIZE = 45
+
+MARKER_SIZE = 200
+CROSS_SIZE = 3000
+#
+# plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+# plt.rc('axes', titlesize=MEDIUM_SIZE, labelsize=BIGGER_SIZE)     # fontsize of the axes title
+# plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+# plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+# plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+# plt.rc('figure', titlesize=MEDIUM_SIZE)  # fontsize of the figure title
 
 def get_gaussian_data(n_samples=None, plot_data=False):
     """
