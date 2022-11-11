@@ -22,6 +22,8 @@ class SimpleAdvDatasetReader():
 
         if 'celeb' in self.dataset_name:
             self.X, self.y, self.s = get_celeb_data()
+        elif 'uciad' in self.dataset_name:
+            self.X, self.y, self.s = get_new_adult_data()
         elif 'adult' in self.dataset_name and 'multigroup' not in self.dataset_name:
             self.X, self.y, self.s = get_adult_data()
         elif 'crime' in self.dataset_name:
@@ -352,7 +354,7 @@ class EncodedEmoji:
 
 
 if __name__ == '__main__':
-    dataset_name = 'adult'
+    dataset_name = 'uciad'
     params = {
         'batch_size': 64,
         'fairness_iterator': 'custom_3',

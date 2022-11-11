@@ -5,9 +5,59 @@ from random import shuffle
 import pandas as pd
 import numpy as np
 from pathlib import Path
-
+import folktables
 
 folder_location = '../FairGrad/datasets'
+
+
+
+
+def get_new_adult_data():
+    data_source = folktables.ACSDataSource(survey_year='2018', horizon='1-Year', survey='person')
+    acs_data = data_source.get_data(states=["CA"], download=True)   # "CO", "CT"
+    ACSIncomeNew = folktables.BasicProblem(
+        features=[
+            'COW',
+            'SCHL',
+            'MAR',
+            'OCCP',
+            'POBP',
+            'RELP',
+            'WKHP',
+            'SEX',
+            'RAC1P',
+        ],
+        target='PINCP',
+        target_transform=lambda x: x > 25000,
+        group='SEX',
+        preprocess=folktables.adult_filter,
+        postprocess=lambda x: np.nan_to_num(x, -1),
+    )
+
+    ACSIncome = folktables.BasicProblem(
+        features=[
+            'AGEP',
+            'COW',
+            'SCHL',
+            'MAR',
+            'OCCP',
+            'POBP',
+            'RELP',
+            'WKHP',
+            'SEX'
+        ],
+        target='PINCP',
+        target_transform=lambda x: x > 50000,
+        group='RAC1P',
+        preprocess=folktables.adult_filter,
+        postprocess=lambda x: np.nan_to_num(x, -1),
+    )
+
+    features, label, group = ACSIncomeNew.df_to_numpy(acs_data)
+    group = group - 1 # as groups are 1,2 and not 0,1
+    label = np.asarray(label, dtype=float)
+
+    return features, label, group
 
 
 
