@@ -16,6 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', '-seed', nargs="*", help="--seed 2 4 8 16 32 64 128 256 512 42", type=int)
     parser.add_argument('--model', '-model', help="end of adv scale 1.0", type=str)
     parser.add_argument('--fairness_function', '-fairness_function', help="accuracy_parity", type=str)
+    parser.add_argument('--bs', '-bs', help="batch size", type=int)
     args = parser.parse_args()
     torch.set_num_threads(2)
     torch.set_num_interop_threads(2)
@@ -76,10 +77,11 @@ if __name__ == '__main__':
                 new_dict[key] = value
         return new_dict
 
-
+    #128,256,512
+    #0.0, 0.001
     counter = 0
     for seed in seeds:
-        for bs in [128,256,512]: # batch size
+        for bs in [args.bs]: # batch size
             for inner_wd in [0.0, 0.001]: # weight decay of adam
                 for fair_lambda in [0.5, 1, 2, 4]: # fairness lambda
                     for weight_len in [8]:
